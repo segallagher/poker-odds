@@ -1,6 +1,8 @@
 
 import tkinter as tk
 from tkinter import ttk        
+import json
+from deck import CardEncoder, CardDecoder
 
 # populate the table
 # input:    2D array of data to be displayed
@@ -63,4 +65,14 @@ def generateHandContributionTable(contributingHands, numContributingHands,sumExp
         data.append([entry[0].name, entry[1], contributingHands[entry[0]], entry[2], (entry[2]/numContributingHands) * contributingHands[entry[0]] ])
     data.append(["","",totalHands,"Total Return:", sumExpectedReturn/numContributingHands])
 
+    return data
+
+def writeData(data):
+    with open("data.json","w") as file:
+        json.dump(data, file, cls=CardEncoder, indent=2)
+
+def readData():
+    data = None
+    with open("data.json","r") as file:
+        data = json.load(file, cls=CardDecoder)
     return data

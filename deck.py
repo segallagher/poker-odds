@@ -1,7 +1,9 @@
-from enum import Enum
+from enum import Enum, EnumMeta
 from itertools import combinations
 from collections import defaultdict
 from pathlib import Path
+import json
+from typing import Any
 
 class suit(Enum):
     clubs = 1
@@ -89,6 +91,32 @@ class Card:
 
     suit = suit.spades
     rank = rank.ace
+
+class CardEncoder(json.JSONEncoder):
+    def default(self, o: Any) -> Any:
+        if isinstance(o, Enum):
+            return o.name
+        elif isinstance(o.__class__, EnumMeta):
+            # Handle Enum classes
+            return {item.name: item.value for item in o.__class__}
+        else:
+            try:
+                return o.__dict__
+            except AttributeError:
+                # If __dict__ is not available, handle other cases
+                return super().default(o)
+            
+class CardDecoder(json.JSONDecoder):
+    def object_hook(self, dct):
+        if 'suit' in dct and 'rank' in dct:
+            # Reconstruct Card instance
+            return Card(rank=rank[dct['rank']], suit=suit[dct['suit']])
+        elif all(isinstance(v, str) for v in dct.values()):
+            # Assume it's an Enum instance
+            enum_class = next(iter(dct)).__class__
+            return enum_class[dct[next(iter(dct))]]
+        return dct
+
 
 class Deck:
     def __init__(self, cards = []) -> None:
@@ -367,17 +395,12 @@ def bestHold(holds):
     return max(holds, key=lambda x: x.ret)
 
 
-holds = allHolds(3, [Card(rank.ace, suit.clubs),Card(rank.three, suit.diamonds), Card(rank.ace, suit.hearts)], [])
-for hold in holds:
-    print(hold)
-    print()
+# holds = allHolds(3, [Card(rank.ace, suit.clubs),Card(rank.three, suit.diamonds), Card(rank.ace, suit.hearts)], [])
+# for hold in holds:
+#     print(hold)
+#     print()
 
 
-print(len(holds))
-best = bestHold(holds)
-print(best.ret, best.hold)
-
-
-
-# hands = a.generateHands(3,[Card(rank.ace, suit.clubs),Card(rank.ace, suit.diamonds)],[Card(rank.ace, suit.spades)])
-# handsToFile(hands)
+# print(len(holds))
+# best = bestHold(holds)
+# print(best.ret, best.hold)

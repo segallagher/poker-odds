@@ -2,7 +2,6 @@
 from deck import *
 from table import *
 from tqdm import tqdm
-import concurrent.futures
 
 # Problem 1: generate probability table based off hand probability
 deck = Deck()
@@ -47,12 +46,28 @@ print("Start calculating perfect play")
 deck = Deck()
 hands = deck.generateHands()
 
-with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-    pass
+#DEBUG
+handStuff = []
 
+#END DEBUG
+# x = 0
 sumExpectedReturn = 0
 for hand in tqdm(hands, desc="Calculating"):
-    best = bestHold(allHolds(inHand=hand))
+    holds = allHolds(inHand=hand)
+    best = bestHold(holds)
     sumExpectedReturn += best.ret
+    handStuff.append({"hand": hand, "ret":best.ret, "best": best, "holds": holds})
+    # x += 1
+    # if x > 10:
+    #     break
 print("For Perfect Play")
 print("Expected Return:", sumExpectedReturn/len(hands))
+
+# #convert enums
+# for hand in handStuff:
+#     for handType in hand["best"].handTypes:
+
+#     print(hand["best"].handTypes)
+#     print()
+
+# writeData([sumExpectedReturn, handStuff])
